@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Advanced Child Height Calculator</title>
+<link rel="stylesheet" href="style.css">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnwxOyDQHqC3mkc9eS7XQH+lmi4ZBqIlAybxRxnbgZq2tGO+8QG5I6sB3XkI0XKmp7hZ7av/A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loading-screen">
+    <div class="loader-content">
+        <div class="loading-bar">
+            <div class="loading-bar-progress"></div>
+        </div>
+        <p>Loading...</p>
+    </div>
+</div>
+
+<h1><i class="fas fa-ruler-combined"></i> Advanced Child Height Calculator</h1>
+
+<div class="calculator">
+    <div class="row">
+        <label><i class="fas fa-female"></i> Mother's Height:</label>
+        <div class="height-input">
+            <input type="number" id="motherFeet" placeholder="ft" min="0">
+            <span>ft</span>
+            <input type="number" id="motherInches" placeholder="in" min="0">
+            <span>in</span>
+        </div>
+    </div>
+    <div class="row">
+        <label><i class="fas fa-male"></i> Father's Height:</label>
+        <div class="height-input">
+            <input type="number" id="fatherFeet" placeholder="ft" min="0">
+            <span>ft</span>
+            <input type="number" id="fatherInches" placeholder="in" min="0">
+            <span>in</span>
+        </div>
+    </div>
+    <div class="row">
+        <label><i class="fas fa-venus-mars"></i> Child's Gender:</label>
+        <div class="gender-row">
+            <label class="icon-label">
+                <input type="radio" name="gender" value="boy" checked> 
+                <i class="fas fa-mars"></i> Boy
+            </label>
+            <label class="icon-label">
+                <input type="radio" name="gender" value="girl"> 
+                <i class="fas fa-venus"></i> Girl
+            </label>
+        </div>
+    </div>
+    <div class="row">
+        <button id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
+    </div>
+    <div class="result" id="result"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
