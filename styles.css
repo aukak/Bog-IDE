@@ -1,0 +1,672 @@
+/* Reset and Basic Styles */
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    height: 100%;
+    width: 100%;
+    background-color: var(--bg-color, #1e1e1e);
+    color: var(--text-color, #ccc);
+    overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.main-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    position: relative;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg, #252526);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #333;
+    position: relative;
+    transition: width 0.2s ease, background-color 0.3s ease;
+}
+
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.sidebar-header h2 {
+    color: var(--header-text, #66ff66);
+    margin: 0;
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.sidebar-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 5px;
+}
+
+.sidebar-actions button {
+    background: none;
+    border: 1px solid var(--button-border, #444);
+    color: var(--button-text, #ccc);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 3px;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-actions button:hover {
+    background: var(--button-hover-bg, #333);
+    color: #fff;
+}
+
+.file-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    overflow-y: auto;
+    transition: background-color 0.3s ease;
+}
+
+/* Custom Scrollbar */
+.file-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.file-list::-webkit-scrollbar-track {
+    background: var(--scrollbar-track, #2c2c2c);
+}
+
+.file-list::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb, #555);
+    border-radius: 4px;
+    border: 2px solid var(--scrollbar-track, #2c2c2c);
+}
+
+.file-list li {
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.file-list li:hover {
+    background: var(--file-hover-bg, #333);
+}
+
+.file-list li.selected {
+    background: var(--file-selected-bg, #444);
+}
+
+/* Styles for Editable File List Item */
+.file-list li.editing {
+    padding: 0;
+}
+
+.file-list li.editing input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--input-border, #555);
+    border-radius: 3px;
+    background: var(--input-bg, #1e1e1e);
+    color: var(--input-text, #fff);
+    font-size: 1rem;
+    outline: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.file-list li.editing input:focus {
+    border-color: #66ff66;
+}
+
+/* Draggable Vertical Divider */
+.divider-vertical {
+    width: 5px;
+    cursor: ew-resize;
+    background-color: var(--divider-bg, #333);
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    transition: background-color 0.2s ease;
+}
+
+.divider-vertical:hover {
+    background-color: var(--divider-hover-bg, #555);
+}
+
+/* Editor Container */
+.editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* Editor Toolbar */
+.editor-toolbar {
+    background: var(--toolbar-bg, #333);
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #444;
+    transition: background 0.3s ease;
+}
+
+.editor-toolbar button, .editor-toolbar select {
+    background: var(--toolbar-button-bg, #444);
+    color: var(--toolbar-button-text, #fff);
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    border-radius: 3px;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.editor-toolbar button:hover, .editor-toolbar select:hover {
+    background: var(--toolbar-button-hover-bg, #555);
+}
+
+.editor-toolbar select {
+    appearance: none;
+    background-position: right 10px center;
+    background-repeat: no-repeat;
+    background-size: 12px;
+}
+
+/* Custom Scrollbar for Toolbar */
+.editor-toolbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.editor-toolbar::-webkit-scrollbar-track {
+    background: var(--scrollbar-track, #2c2c2c);
+}
+
+.editor-toolbar::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb, #555);
+    border-radius: 4px;
+    border: 2px solid var(--scrollbar-track, #2c2c2c);
+}
+
+/* Editor */
+.editor {
+    flex: 1;
+    position: relative;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Output Panel */
+.output-panel {
+    height: 150px;
+    background: var(--output-bg, #1e1e1e);
+    border-top: 1px solid #444;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: height 0.2s ease, background-color 0.3s ease;
+}
+
+/* Custom Scrollbar for Output */
+.output-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.output-content::-webkit-scrollbar-track {
+    background: var(--scrollbar-track, #2c2c2c);
+}
+
+.output-content::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb, #555);
+    border-radius: 4px;
+    border: 2px solid var(--scrollbar-track, #2c2c2c);
+}
+
+.output-header {
+    background: var(--output-header-bg, #333);
+    color: var(--output-header-text, #fff);
+    padding: 5px;
+    font-weight: bold;
+    border-bottom: 1px solid #444;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.output-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    color: var(--output-text, #66ff66);
+    font-family: monospace;
+    background: var(--output-content-bg, #1e1e1e);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Draggable Horizontal Divider */
+.divider-horizontal {
+    height: 5px;
+    cursor: ns-resize;
+    background-color: var(--divider-bg, #333);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: background-color 0.2s ease;
+}
+
+.divider-horizontal:hover {
+    background-color: var(--divider-hover-bg, #555);
+}
+
+/* Command Palette */
+.command-palette {
+    position: absolute;
+    top: 20%;
+    left: 40%;
+    width: 300px;
+    background: var(--command-palette-bg, #2d2d2d);
+    border: 1px solid var(--command-palette-border, #555);
+    color: var(--command-palette-text, #fff);
+    z-index: 999;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    border-radius: 5px;
+    transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.command-palette.hidden {
+    display: none;
+}
+
+.command-palette input {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    background: var(--command-palette-input-bg, #1e1e1e);
+    color: var(--command-palette-input-text, #fff);
+    outline: none;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.command-palette input:focus {
+    border-bottom: 1px solid #66ff66;
+}
+
+.command-palette ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.command-palette li {
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.command-palette li:hover {
+    background: var(--command-palette-hover-bg, #444);
+}
+
+/* Context Menu */
+.context-menu {
+    position: absolute;
+    background: var(--context-menu-bg, #333);
+    border: 1px solid var(--context-menu-border, #555);
+    color: var(--context-menu-text, #fff);
+    font-size: 0.9rem;
+    z-index: 1000;
+    padding: 0;
+    border-radius: 3px;
+    transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.context-menu.hidden {
+    display: none;
+}
+
+.context-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.context-menu li {
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.context-menu li:hover {
+    background: var(--context-menu-hover-bg, #444);
+}
+
+/* Info Panel */
+.info-panel {
+    position: absolute;
+    right: 15px;
+    top: 50px;
+    width: 400px;
+    background: var(--info-panel-bg, #2d2d2d);
+    border: 1px solid var(--info-panel-border, #555);
+    color: var(--info-panel-text, #fff);
+    padding: 15px;
+    font-size: 0.9rem;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    border-radius: 5px;
+    transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.info-panel.hidden {
+    display: none;
+}
+
+.info-panel h3 {
+    margin-top: 0;
+    color: var(--info-panel-header, #66ff66);
+    transition: color 0.3s ease;
+}
+
+.info-panel pre {
+    background: var(--info-panel-pre-bg, #1e1e1e);
+    padding: 10px;
+    border-radius: 3px;
+    overflow: auto;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.info-panel ul {
+    padding-left: 20px;
+}
+
+.info-panel ul li {
+    margin-bottom: 5px;
+}
+
+/* Settings Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: var(--modal-bg, #2d2d2d);
+    padding: 20px;
+    border: 1px solid var(--modal-border, #555);
+    border-radius: 5px;
+    width: 400px;
+    color: var(--modal-text, #fff);
+    position: relative;
+    transition: all 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--modal-header, #66ff66);
+    transition: color 0.3s ease;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: #ff6666;
+}
+
+.settings-group {
+    margin-bottom: 15px;
+}
+
+.settings-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color 0.3s ease;
+}
+
+.settings-group input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid var(--input-border, #555);
+    border-radius: 3px;
+    background: var(--input-bg, #1e1e1e);
+    color: var(--input-text, #fff);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.settings-group select {
+    padding: 5px;
+    border: 1px solid var(--input-border, #555);
+    border-radius: 3px;
+    background: var(--input-bg, #1e1e1e);
+    color: var(--input-text, #fff);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#saveSettings {
+    padding: 8px 12px;
+    background: var(--save-button-bg, #444);
+    border: none;
+    color: var(--save-button-text, #fff);
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+#saveSettings:hover {
+    background: var(--save-button-hover-bg, #555);
+    color: #fff;
+}
+
+/* Modal Scroll */
+.modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Smooth Transitions */
+.hidden {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.info-panel, .command-palette, .context-menu, .modal-content {
+    opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .command-palette {
+        left: 10%;
+    }
+
+    .editor-toolbar button, .editor-toolbar select {
+        padding: 5px 8px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Theme Styles */
+
+/* Bog Dark Theme */
+body.bog-dark {
+    --bg-color: #1e1e1e;
+    --text-color: #ccc;
+    --sidebar-bg: #252526;
+    --header-text: #66ff66;
+    --button-text: #ccc;
+    --button-border: #444;
+    --button-hover-bg: #333;
+    --file-hover-bg: #333;
+    --file-selected-bg: #444;
+    --divider-bg: #333;
+    --divider-hover-bg: #555;
+    --toolbar-bg: #333;
+    --toolbar-button-bg: #444;
+    --toolbar-button-text: #fff;
+    --toolbar-button-hover-bg: #555;
+    --scrollbar-track: #2c2c2c;
+    --scrollbar-thumb: #555;
+    --output-bg: #1e1e1e;
+    --output-header-bg: #333;
+    --output-header-text: #fff;
+    --output-text: #66ff66;
+    --output-content-bg: #1e1e1e;
+    --command-palette-bg: #2d2d2d;
+    --command-palette-border: #555;
+    --command-palette-text: #fff;
+    --command-palette-input-bg: #1e1e1e;
+    --command-palette-input-text: #fff;
+    --command-palette-hover-bg: #444;
+    --context-menu-bg: #333;
+    --context-menu-border: #555;
+    --context-menu-text: #fff;
+    --context-menu-hover-bg: #444;
+    --info-panel-bg: #2d2d2d;
+    --info-panel-border: #555;
+    --info-panel-text: #fff;
+    --info-panel-header: #66ff66;
+    --info-panel-pre-bg: #1e1e1e;
+    --modal-bg: #2d2d2d;
+    --modal-border: #555;
+    --modal-text: #fff;
+    --modal-header: #66ff66;
+    --input-border: #555;
+    --input-bg: #1e1e1e;
+    --input-text: #fff;
+    --save-button-bg: #444;
+    --save-button-text: #fff;
+    --save-button-hover-bg: #555;
+}
+
+/* Bog Light Theme */
+body.bog-light {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --sidebar-bg: #f0f0f0;
+    --header-text: #228B22;
+    --button-text: #000;
+    --button-border: #ccc;
+    --button-hover-bg: #ddd;
+    --file-hover-bg: #e0e0e0;
+    --file-selected-bg: #c0c0c0;
+    --divider-bg: #ccc;
+    --divider-hover-bg: #bbb;
+    --toolbar-bg: #f0f0f0;
+    --toolbar-button-bg: #ddd;
+    --toolbar-button-text: #000;
+    --toolbar-button-hover-bg: #ccc;
+    --scrollbar-track: #f0f0f0;
+    --scrollbar-thumb: #bbb;
+    --output-bg: #ffffff;
+    --output-header-bg: #ddd;
+    --output-header-text: #000;
+    --output-text: #228B22;
+    --output-content-bg: #ffffff;
+    --command-palette-bg: #f0f0f0;
+    --command-palette-border: #ccc;
+    --command-palette-text: #000;
+    --command-palette-input-bg: #ffffff;
+    --command-palette-input-text: #000;
+    --command-palette-hover-bg: #e0e0e0;
+    --context-menu-bg: #f0f0f0;
+    --context-menu-border: #ccc;
+    --context-menu-text: #000;
+    --context-menu-hover-bg: #e0e0e0;
+    --info-panel-bg: #f0f0f0;
+    --info-panel-border: #ccc;
+    --info-panel-text: #000;
+    --info-panel-header: #228B22;
+    --info-panel-pre-bg: #ffffff;
+    --modal-bg: #f0f0f0;
+    --modal-border: #ccc;
+    --modal-text: #000;
+    --modal-header: #228B22;
+    --input-border: #ccc;
+    --input-bg: #ffffff;
+    --input-text: #000;
+    --save-button-bg: #ddd;
+    --save-button-text: #000;
+    --save-button-hover-bg: #ccc;
+}
+
+/* Additional Themes can be added similarly by defining CSS variables */
+
+.sidebar-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--header-text, #66ff66);
+}
+
+.info-circle-button {
+    background: var(--toolbar-button-bg, #444);
+    color: var(--toolbar-button-text, #fff);
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    transition: background 0.2s, color 0.2s ease;
+    padding: 0;
+}
+
+.info-circle-button:hover {
+    background: var(--toolbar-button-hover-bg, #555);
+    color: #66ff66;
+}
+
+
+

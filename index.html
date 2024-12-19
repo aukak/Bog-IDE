@@ -1,65 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Advanced Child Height Calculator</title>
-<link rel="stylesheet" href="style.css">
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnwxOyDQHqC3mkc9eS7XQH+lmi4ZBqIlAybxRxnbgZq2tGO+8QG5I6sB3XkI0XKmp7hZ7av/A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bog IDE</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Monaco Editor Loader -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.33.0/min/vs/loader.js"></script>
+    <script src="bog-lang-config.js" defer></script>
 </head>
 <body>
-
-<!-- Loading Screen -->
-<div id="loading-screen">
-    <div class="loader-content">
-        <div class="loading-bar">
-            <div class="loading-bar-progress"></div>
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>
+                    BOG
+                    <!-- Remove inline styles, rely on CSS for alignment -->
+                    <button id="infoBtn" title="Show Info Panel" class="info-circle-button">i</button>
+                </h2>
+                <div class="sidebar-actions">
+                    <button id="newFileBtn" title="New File">New File</button>
+                    <button id="uploadBtn" title="Upload .bog">Upload</button>
+                    <input type="file" id="fileInput" accept=".bog" style="display:none;">
+                </div>
+            </div>
+            <ul class="file-list" id="fileList"></ul>
+            <!-- Draggable Divider -->
+            <div class="divider-vertical" id="dividerVertical"></div>
         </div>
-        <p>Loading...</p>
-    </div>
-</div>
-
-<h1><i class="fas fa-ruler-combined"></i> Advanced Child Height Calculator</h1>
-
-<div class="calculator">
-    <div class="row">
-        <label><i class="fas fa-female"></i> Mother's Height:</label>
-        <div class="height-input">
-            <input type="number" id="motherFeet" placeholder="ft" min="0">
-            <span>ft</span>
-            <input type="number" id="motherInches" placeholder="in" min="0">
-            <span>in</span>
-        </div>
-    </div>
-    <div class="row">
-        <label><i class="fas fa-male"></i> Father's Height:</label>
-        <div class="height-input">
-            <input type="number" id="fatherFeet" placeholder="ft" min="0">
-            <span>ft</span>
-            <input type="number" id="fatherInches" placeholder="in" min="0">
-            <span>in</span>
-        </div>
-    </div>
-    <div class="row">
-        <label><i class="fas fa-venus-mars"></i> Child's Gender:</label>
-        <div class="gender-row">
-            <label class="icon-label">
-                <input type="radio" name="gender" value="boy" checked> 
-                <i class="fas fa-mars"></i> Boy
-            </label>
-            <label class="icon-label">
-                <input type="radio" name="gender" value="girl"> 
-                <i class="fas fa-venus"></i> Girl
-            </label>
+        <div class="editor-container">
+            <div class="editor-toolbar">
+                <button id="runButton" title="Run Code">Run</button>
+                <select id="themeSelect" title="Theme">
+                    <option value="bog-dark">Bog Dark</option>
+                    <option value="bog-light">Bog Light</option>
+                    <option value="swamp-green">Swamp Green</option>
+                    <option value="bog-ocean">Bog Ocean</option>
+                    <option value="bog-grey">Bog Grey</option>
+                    <option value="bog-highContrast">Bog High Contrast</option>
+                </select>
+                <button id="commandPaletteButton" title="Show Command Palette">Commands</button>
+                <button id="settingsBtn" title="Settings">Settings</button>
+            </div>
+            <div id="editor" class="editor"></div>
+            <div class="output-panel">
+                <div class="output-header">Output</div>
+                <div id="output" class="output-content"></div>
+                <!-- Draggable Horizontal Divider -->
+                <div class="divider-horizontal" id="dividerHorizontal"></div>
+            </div>
         </div>
     </div>
-    <div class="row">
-        <button id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
-    </div>
-    <div class="result" id="result"></div>
-</div>
 
-<script src="script.js"></script>
+    <!-- Info Panel -->
+    <div id="infoPanel" class="info-panel hidden">
+        <h3>About Bog Language</h3>
+        <p><strong>Keywords:</strong> bogfn, mire, sludge, peat, drain, suckin, fen, gurgle</p>
+        <p><strong>Data Types:</strong> num, dec, txt, bool</p>
+        <p><strong>Print:</strong> <code>gurgle("Your message")</code></p>
+        <p><strong>Comments:</strong> <code>~~</code> single-line, <code>~~~ ... ~~~</code> multi-line</p>
+        <p><strong>Control Structures:</strong></p>
+        <ul>
+            <li><code>mire</code> (if)</li>
+            <li><code>sludge</code> (else)</li>
+            <li><code>peat</code> (for loops)</li>
+            <li><code>drain</code> (return)</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <pre><code>bogfn main(): num {
+    fen PI = 3.14
+    mire(true) {
+        gurgle("Hello Bog World!")
+    } sludge {
+        gurgle("Nope!")
+    }
+    drain 0
+}</code></pre>
+        <p>🌱 Simple Syntax<br>💧 Inspired by nature<br>🛠 Great for learning<br>❤️ Made by aukak on Discord! </p>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" id="closeSettings">&times;</span>
+            <h3>Settings</h3>
+            <div class="settings-group">
+                <label for="toggleMinimap">
+                    <input type="checkbox" id="toggleMinimap">
+                    Show Minimap
+                </label>
+            </div>
+            <div class="settings-group">
+                <label for="toggleWordWrap">
+                    <input type="checkbox" id="toggleWordWrap">
+                    Enable Word Wrap
+                </label>
+            </div>
+            <div class="settings-group">
+                <label for="fontSize">Editor Font Size:</label>
+                <input type="number" id="fontSize" min="12" max="24" value="14">
+            </div>
+            <button id="saveSettings">Save Settings</button>
+        </div>
+    </div>
+
+    <!-- Command Palette -->
+    <div id="commandPalette" class="command-palette hidden">
+        <input type="text" id="commandInput" placeholder="Type a command... (e.g. 'compile', 'format', 'lint', 'build', 'runTests', 'showDocs', 'toggleLineNumbers')" />
+        <ul id="commandList">
+            <li data-command="compile">Compile Bog Code</li>
+            <li data-command="format">Format Document</li>
+            <li data-command="toggleComment">Toggle Comment</li>
+            <li data-command="lint">Lint Code</li>
+            <li data-command="build">Build Project</li>
+            <li data-command="runTests">Run Tests</li>
+            <li data-command="showDocs">Show/Hide Docs</li>
+            <li data-command="toggleLineNumbers">Toggle Line Numbers</li>
+        </ul>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="fileContextMenu" class="context-menu hidden">
+        <ul>
+            <li data-action="newFile">New File</li>
+            <li data-action="renameFile">Rename File</li>
+            <li data-action="deleteFile">Delete File</li>
+            <li data-action="downloadFile">Download File</li>
+        </ul>
+    </div>
+
+    <script src="app.js" defer></script>
 </body>
 </html>
