@@ -33,18 +33,38 @@ body, html {
     transition: width 0.2s ease, background-color 0.3s ease;
 }
 
-.sidebar-header {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    border-bottom: 1px solid #333;
-}
-
 .sidebar-header h2 {
-    color: var(--header-text, #66ff66);
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin: 0;
     font-size: 1.5rem;
-    transition: color 0.3s ease;
+    color: var(--header-text, #66ff66);
+}
+
+.info-circle-button {
+    background: var(--toolbar-button-bg, #444);
+    color: var(--toolbar-button-text, #fff);
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    transition: background 0.2s, color 0.2s ease;
+    padding: 0;
+}
+
+.info-circle-button:hover {
+    background: var(--toolbar-button-hover-bg, #555);
+    color: #66ff66;
 }
 
 .sidebar-actions {
@@ -110,7 +130,15 @@ body, html {
     background: var(--file-selected-bg, #444);
 }
 
-/* Styles for Editable File List Item */
+/* Removed Folder Styles */
+/* Since folder functionality is removed, we omit any folder-specific styles */
+
+/* Drag-and-Drop Feedback */
+.file-list li.file.drag-over {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Prevent multiple inline creations */
 .file-list li.editing {
     padding: 0;
 }
@@ -328,43 +356,76 @@ body, html {
 
 /* Context Menu */
 .context-menu {
-    position: absolute;
-    background: var(--context-menu-bg, #333);
-    border: 1px solid var(--context-menu-border, #555);
-    color: var(--context-menu-text, #fff);
-    font-size: 0.9rem;
-    z-index: 1000;
-    padding: 0;
-    border-radius: 3px;
-    transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    position: absolute; /* Position it relative to the viewport */
+    background-color: #2f2f2f; /* White background */
+    border: 1px solid #3f3f3f; /* Light border */
+    border-radius: 4px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    z-index: 1000; /* Ensure it appears above other elements */
+    width: 150px; /* Fixed width */
+    padding: 5px 0; /* Vertical padding */
 }
+
 
 .context-menu.hidden {
     display: none;
 }
 
 .context-menu ul {
-    list-style: none;
+    list-style: none; /* Remove default list styling */
     margin: 0;
     padding: 0;
 }
 
 .context-menu li {
-    padding: 8px 10px;
-    cursor: pointer;
-    transition: background 0.3s ease, color 0.3s ease;
+    padding: 8px 12px; /* Padding for clickable area */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.2s ease; /* Smooth background transition */
 }
 
 .context-menu li:hover {
-    background: var(--context-menu-hover-bg, #444);
+    background-color: #222222; /* Light grey background on hover */
+}
+
+.three-dots-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0 5px;
+    color: #555555;
+    transition: color 0.2s ease;
+}
+
+.three-dots-button:hover {
+    color: #000000;
+}
+
+.file-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.file-item:hover {
+    background-color: #1f1f1f;
+}
+
+/* Optional: Styling for file name */
+.file-name {
+    flex-grow: 1;
+    margin-right: 10px;
 }
 
 /* Info Panel */
 .info-panel {
     position: absolute;
-    right: 15px;
+    right: 10px;
     top: 50px;
-    width: 400px;
+    width: 600px;
     background: var(--info-panel-bg, #2d2d2d);
     border: 1px solid var(--info-panel-border, #555);
     color: var(--info-panel-text, #fff);
@@ -496,16 +557,8 @@ body, html {
     color: #fff;
 }
 
-/* Modal Scroll */
-.modal-content {
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-/* Smooth Transitions */
 .hidden {
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    display: none;
 }
 
 .info-panel, .command-palette, .context-menu, .modal-content {
@@ -634,39 +687,18 @@ body.bog-light {
 
 /* Additional Themes can be added similarly by defining CSS variables */
 
-.sidebar-header h2 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0;
-    font-size: 1.5rem;
-    color: var(--header-text, #66ff66);
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .command-palette {
+        left: 10%;
+    }
+
+    .editor-toolbar button, .editor-toolbar select {
+        padding: 5px 8px;
+        font-size: 0.9rem;
+    }
 }
-
-.info-circle-button {
-    background: var(--toolbar-button-bg, #444);
-    color: var(--toolbar-button-text, #fff);
-    border: none;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    line-height: 20px;
-    text-align: center;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    vertical-align: middle;
-    transition: background 0.2s, color 0.2s ease;
-    padding: 0;
-}
-
-.info-circle-button:hover {
-    background: var(--toolbar-button-hover-bg, #555);
-    color: #66ff66;
-}
-
-
-

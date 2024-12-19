@@ -7,21 +7,23 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Monaco Editor Loader -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.33.0/min/vs/loader.js"></script>
-    <script src="bog-lang-config.js" defer></script>
+    <!-- Language Configurations -->
+    <script src="bog-auk-lang-config.js" defer></script>
 </head>
-<body>
+<body class="bog-dark">
     <div class="main-container">
         <div class="sidebar">
             <div class="sidebar-header">
                 <h2>
                     BOG
-                    <!-- Remove inline styles, rely on CSS for alignment -->
+                    <!-- Circular info button with letter 'i' -->
                     <button id="infoBtn" title="Show Info Panel" class="info-circle-button">i</button>
                 </h2>
                 <div class="sidebar-actions">
                     <button id="newFileBtn" title="New File">New File</button>
-                    <button id="uploadBtn" title="Upload .bog">Upload</button>
-                    <input type="file" id="fileInput" accept=".bog" style="display:none;">
+                    <!-- Removed New Folder button as per your request -->
+                    <button id="uploadBtn" title="Upload File">Upload</button>
+                    <input type="file" id="fileInput" accept=".bog,.auk" style="display:none;">
                 </div>
             </div>
             <ul class="file-list" id="fileList"></ul>
@@ -38,6 +40,8 @@
                     <option value="bog-ocean">Bog Ocean</option>
                     <option value="bog-grey">Bog Grey</option>
                     <option value="bog-highContrast">Bog High Contrast</option>
+                    <option value="auk-dark">Auk Dark</option>
+                    <option value="auk-light">Auk Light</option>
                 </select>
                 <button id="commandPaletteButton" title="Show Command Palette">Commands</button>
                 <button id="settingsBtn" title="Settings">Settings</button>
@@ -53,80 +57,97 @@
     </div>
 
     <!-- Info Panel -->
-    <div id="infoPanel" class="info-panel hidden">
-        <h3>About Bog Language</h3>
-        <p><strong>Keywords:</strong> bogfn, mire, sludge, peat, drain, suckin, fen, gurgle</p>
-        <p><strong>Data Types:</strong> num, dec, txt, bool</p>
-        <p><strong>Print:</strong> <code>gurgle("Your message")</code></p>
-        <p><strong>Comments:</strong> <code>~~</code> single-line, <code>~~~ ... ~~~</code> multi-line</p>
-        <p><strong>Control Structures:</strong></p>
-        <ul>
-            <li><code>mire</code> (if)</li>
-            <li><code>sludge</code> (else)</li>
-            <li><code>peat</code> (for loops)</li>
-            <li><code>drain</code> (return)</li>
-        </ul>
-        <p><strong>Example:</strong></p>
-        <pre><code>bogfn main(): num {
-    fen PI = 3.14
-    mire(true) {
-        gurgle("Hello Bog World!")
-    } sludge {
-        gurgle("Nope!")
-    }
-    drain 0
-}</code></pre>
-        <p>🌱 Simple Syntax<br>💧 Inspired by nature<br>🛠 Great for learning<br>❤️ Made by aukak on Discord! </p>
-    </div>
+    <div id="infoPanel" class="info-panel hidden" tabindex="-1">
+        <h3>About Bog and Auk Languages</h3>
+        
+        <!-- Bog Language Information -->
+        <section>
+            <h4>Bog Language</h4>
+            <p><strong>Purpose:</strong> Bog is designed for scripting game logic with a syntax inspired by natural elements.</p>
+            <p><strong>Keywords:</strong> <code>bogfn</code>, <code>mire</code>, <code>sludge</code>, <code>peat</code>, <code>drain</code>, <code>suckin</code>, <code>fen</code>, <code>gurgle</code></p>
+            <p><strong>Data Types:</strong> <code>num</code>, <code>dec</code>, <code>txt</code>, <code>bool</code></p>
+            <p><strong>Example:</strong></p>
+            <pre><code>suckin "std.bog"
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" id="closeSettings">&times;</span>
-            <h3>Settings</h3>
-            <div class="settings-group">
-                <label for="toggleMinimap">
-                    <input type="checkbox" id="toggleMinimap">
-                    Show Minimap
-                </label>
-            </div>
-            <div class="settings-group">
-                <label for="toggleWordWrap">
-                    <input type="checkbox" id="toggleWordWrap">
-                    Enable Word Wrap
-                </label>
-            </div>
-            <div class="settings-group">
-                <label for="fontSize">Editor Font Size:</label>
-                <input type="number" id="fontSize" min="12" max="24" value="14">
-            </div>
-            <button id="saveSettings">Save Settings</button>
-        </div>
+                bogfn main(): num {
+                    fen count = 10
+                    mire(count > 5) {
+                        gurgle("Count is greater than 5")
+                    } sludge {
+                        gurgle("Count is 5 or less")
+                    }
+                    drain 0
+                }
+            </code></pre>
+            <p><strong>Comments:</strong> Single-line comments use <code>~~</code>, multi-line comments use <code>~~~ ... ~~~</code></p>
+        </section>
+        
+        <hr>
+        
+        <!-- Auk Language Information -->
+        <section>
+            <h4>Auk Language</h4>
+            <p><strong>Purpose:</strong> Auk is tailored for styling and designing game interfaces with a unique syntax differing from traditional CSS.</p>
+            <p><strong>Selectors:</strong> 
+                <ul>
+                    <li><code>.class</code> - Select elements by class</li>
+                    <li><code>#id</code> - Select elements by ID</li>
+                    <li><code>element</code> - Select elements by tag name</li>
+                </ul>
+            </p>
+            <p><strong>Properties:</strong> Auk introduces custom properties prefixed with <code>fen-</code> to define styles.</p>
+            <p><strong>Example:</strong></p>
+            <pre><code>selector fen-color: #ff0000
+    selector mire-background: #00ff00
+    ~~ This is a comment ~~
+            </code></pre>
+            <p><strong>Additional Features:</strong></p>
+            <ul>
+                <li>Responsive Design Handling</li>
+                <li>Dynamic Styling Capabilities</li>
+                <li>Integration with Bog for Seamless UI Updates</li>
+            </ul>
+        </section>
+        
+        <hr>
+        
+        <!-- General Information -->
+        <section>
+            <p>🌱 **Simple Syntax**<br>💧 **Inspired by Nature**<br>🛠 **Great for Styling and Logic**</p>
+        </section>
+    </div>
     </div>
 
     <!-- Command Palette -->
     <div id="commandPalette" class="command-palette hidden">
-        <input type="text" id="commandInput" placeholder="Type a command... (e.g. 'compile', 'format', 'lint', 'build', 'runTests', 'showDocs', 'toggleLineNumbers')" />
+        <input type="text" id="commandInput" placeholder="Type a command... (e.g. 'compile', 'format', 'lint', 'runTests', 'showDocs', 'toggleLineNumbers', 'build', 'deploy', 'search', 'toggleDarkMode', 'fileStats', 'clearOutput', 'export')" />
         <ul id="commandList">
-            <li data-command="compile">Compile Bog Code</li>
+            <li data-command="compile">Compile Code</li>
             <li data-command="format">Format Document</li>
-            <li data-command="toggleComment">Toggle Comment</li>
+            <li data-command="togglecomment">Toggle Comment</li>
             <li data-command="lint">Lint Code</li>
-            <li data-command="build">Build Project</li>
             <li data-command="runTests">Run Tests</li>
-            <li data-command="showDocs">Show/Hide Docs</li>
-            <li data-command="toggleLineNumbers">Toggle Line Numbers</li>
+            <li data-command="showdocs">Show/Hide Docs</li>
+            <li data-command="togglelinenumbers">Toggle Line Numbers</li>
         </ul>
     </div>
 
-    <!-- Context Menu -->
-    <div id="fileContextMenu" class="context-menu hidden">
-        <ul>
-            <li data-action="newFile">New File</li>
-            <li data-action="renameFile">Rename File</li>
-            <li data-action="deleteFile">Delete File</li>
-            <li data-action="downloadFile">Download File</li>
-        </ul>
+
+<div id="fileContextMenu" class="context-menu hidden">
+    <ul>
+        <li data-action="rename">Rename</li>
+        <li data-action="delete">Delete</li>
+        <li data-action="download">Download</li>
+    </ul>
+</div>
+
+<!-- Existing Scripts -->
+<script src="app.js" defer></script>
+
+
+    <!-- Game Elements -->
+    <div id="gameContainer" class="gameContainer">
+        <div id="scoreDisplay" class="scoreDisplay">Score: 0</div>
     </div>
 
     <script src="app.js" defer></script>
