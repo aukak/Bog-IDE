@@ -1,3 +1,5 @@
+/* styles.css */
+
 /* Reset and Basic Styles */
 * {
     box-sizing: border-box;
@@ -33,6 +35,7 @@ body, html {
     transition: width 0.2s ease, background-color 0.3s ease;
 }
 
+/* Sidebar Header */
 .sidebar-header h2 {
     display: flex;
     align-items: center;
@@ -42,6 +45,7 @@ body, html {
     color: var(--header-text, #66ff66);
 }
 
+/* Info Circle Button */
 .info-circle-button {
     background: var(--toolbar-button-bg, #444);
     color: var(--toolbar-button-text, #fff);
@@ -67,6 +71,7 @@ body, html {
     color: #66ff66;
 }
 
+/* Sidebar Actions */
 .sidebar-actions {
     margin-top: 10px;
     display: flex;
@@ -89,6 +94,7 @@ body, html {
     color: #fff;
 }
 
+/* File List */
 .file-list {
     list-style: none;
     margin: 0;
@@ -113,6 +119,7 @@ body, html {
     border: 2px solid var(--scrollbar-track, #2c2c2c);
 }
 
+/* File Items */
 .file-list li {
     padding: 8px 10px;
     cursor: pointer;
@@ -130,15 +137,12 @@ body, html {
     background: var(--file-selected-bg, #444);
 }
 
-/* Removed Folder Styles */
-/* Since folder functionality is removed, we omit any folder-specific styles */
-
 /* Drag-and-Drop Feedback */
 .file-list li.file.drag-over {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Prevent multiple inline creations */
+/* Editing File Name */
 .file-list li.editing {
     padding: 0;
 }
@@ -357,15 +361,14 @@ body, html {
 /* Context Menu */
 .context-menu {
     position: absolute; /* Position it relative to the viewport */
-    background-color: #2f2f2f; /* White background */
+    background-color: #2f2f2f; /* Dark background */
     border: 1px solid #3f3f3f; /* Light border */
-    border-radius: 4px; /* Rounded corners */
+    border-radius: 4px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
     z-index: 1000; /* Ensure it appears above other elements */
     width: 150px; /* Fixed width */
     padding: 5px 0; /* Vertical padding */
 }
-
 
 .context-menu.hidden {
     display: none;
@@ -383,8 +386,10 @@ body, html {
     transition: background-color 0.2s ease; /* Smooth background transition */
 }
 
-.context-menu li:hover {
-    background-color: #222222; /* Light grey background on hover */
+.context-menu li:hover,
+.context-menu li:focus {
+    background-color: #222222; /* Darker background on hover */
+    outline: none;
 }
 
 .three-dots-button {
@@ -557,14 +562,6 @@ body, html {
     color: #fff;
 }
 
-.hidden {
-    display: none;
-}
-
-.info-panel, .command-palette, .context-menu, .modal-content {
-    opacity: 1;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .sidebar {
@@ -701,4 +698,65 @@ body.bog-light {
         padding: 5px 8px;
         font-size: 0.9rem;
     }
+}
+
+/* Notifications */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #28a745; /* Green background */
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 3000;
+    opacity: 0;
+    animation: fadeInOut 3s forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* styles.css */
+
+/* Custom Dropdown Scrollbars */
+
+.custom-dropdown::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.custom-dropdown::-webkit-scrollbar-track {
+    background: var(--scrollbar-track, #f1f1f1);
+    border-radius: 4px;
+}
+
+.custom-dropdown::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb, #888);
+    border-radius: 4px;
+    border: 2px solid var(--scrollbar-track, #f1f1f1);
+    transition: background-color 0.3s;
+}
+
+.custom-dropdown::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover, #555);
+}
+
+/* Firefox Scrollbar Styling */
+.custom-dropdown {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb, #888) var(--scrollbar-track, #f1f1f1);
+}
+
+/* Example Classes for Dropdowns */
+.command-palette.custom-dropdown,
+.context-menu.custom-dropdown,
+.settings-modal.custom-dropdown {
+    /* Ensure these elements have overflow for scrollbars to appear */
+    overflow-y: auto;
 }

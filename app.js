@@ -75,9 +75,6 @@ window.addEventListener('DOMContentLoaded', () => {
     loadFileSystem();
 
     outputElement = document.getElementById('output');
-    commandPalette = document.getElementById('commandPalette');
-    commandInput = document.getElementById('commandInput');
-    commandList = document.getElementById('commandList');
     fileListEl = document.getElementById('fileList');
 
     // Initialize Monaco Editor
@@ -104,7 +101,6 @@ window.addEventListener('DOMContentLoaded', () => {
         applyTheme(theme);
         saveSettings({ defaultTheme: theme });
     });
-    document.getElementById('commandPaletteButton').addEventListener('click', toggleCommandPalette);
     document.getElementById('newFileBtn').addEventListener('click', () => initiateNewItemCreation('file'));
     document.getElementById('uploadBtn').addEventListener('click', () => {
         document.getElementById('fileInput').click();
@@ -115,28 +111,15 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('closeSettings').addEventListener('click', closeSettingsModal);
     document.getElementById('saveSettings').addEventListener('click', saveSettingsFromModal);
 
-    commandInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            runCommand(commandInput.value);
-        }
-    });
-
-    commandList.addEventListener('click', (e) => {
-        const cmd = e.target.getAttribute('data-command');
-        if (cmd) runCommand(cmd);
-    });
-
     document.addEventListener('keydown', (e) => {
-        // Ctrl+Shift+P to open command palette
-        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'p') {
-            toggleCommandPalette();
-        }
+        // Ctrl+Shift+P to open command palette (now removed)
+        // If you want to assign other shortcuts, handle here
     });
 
     // Right-click context menu
     fileListEl.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        const target = e.target.closest('li');
+        const target = e.target.closest('li.file');
         if (target && !target.classList.contains('editing')) {
             const path = target.getAttribute('data-path');
             const type = target.getAttribute('data-type');
@@ -148,6 +131,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const contextMenu = document.getElementById('fileContextMenu');
         if (!contextMenu.contains(e.target)) {
             contextMenu.classList.add('hidden');
+            contextMenu.setAttribute('aria-hidden', 'true');
         }
     });
 
@@ -260,6 +244,7 @@ function traverseFileSystem(fs, parentEl, currentPath) {
                 }
             });
             li.setAttribute('tabindex', '0'); // Make it focusable
+
             parentEl.appendChild(li);
         }
     }
@@ -323,133 +308,285 @@ function mockRun(code, lang) {
     return output || "[No Output]";
 }
 
-// Toggle Command Palette
-function toggleCommandPalette() {
-    isCommandPaletteOpen = !isCommandPaletteOpen;
-    commandPalette.classList.toggle('hidden', !isCommandPaletteOpen);
-    if (isCommandPaletteOpen) {
-        commandInput.focus();
-    }
+// Show Context Menu on Right-Click
+function showContextMenu(x, y, path, type) {
+    const contextMenu = document.getElementById('fileContextMenu');
+    contextMenu.style.top = `${y}px`;
+    contextMenu.style.left = `${x}px`;
+    contextMenu.classList.remove('hidden');
+    contextMenu.setAttribute('data-path', path);
+    contextMenu.setAttribute('data-type', type);
+    contextMenu.focus();
+    contextMenu.setAttribute('aria-hidden', 'false');
 }
 
-// Run Command from Command Palette
-function runCommand(cmd) {
-    cmd = cmd.trim().toLowerCase();
-    switch (cmd) {
-        case 'compile':
-            runCode();
+// Handle context menu actions
+function handleContextMenuAction(action, path, type) {
+    switch(action) {
+        case 'open':
+            openFile(path);
             break;
-        case 'format':
-            formatCode();
+        case 'download':
+            if (type === 'file') downloadItem(path);
+            else alert('Only files can be downloaded.');
             break;
-        case 'togglecomment':
-            toggleCommentOnCurrentLine();
+        case 'copyPath':
+            copyToClipboard(path);
+            showNotification('Path copied to clipboard!');
             break;
-        case 'lint':
-            lintCode();
-            break;
-        case 'runtests':
-            runTests();
-            break;
-        case 'showdocs':
-            toggleInfoPanel();
-            break;
-        case 'togglelinenumbers':
-            toggleLineNumbers();
+        case 'revealInExplorer':
+            alert('Reveal in Explorer is not supported in the web environment.');
             break;
         default:
-            outputElement.innerText = `Unknown command: ${cmd}`;
+            console.warn(`Unhandled action: ${action}`);
     }
-    toggleCommandPalette();
 }
 
-// Example implementations of commands
-function formatCode() {
-    const content = editorInstance.getValue();
-    const lang = getLanguage(currentFile);
-    let formatted = content;
-    if (lang === 'bog') {
-        formatted = content.replace(/\s+$/gm, ''); // Simple trim trailing spaces
-    } else if (lang === 'auk') {
-        formatted = content.replace(/\s+$/gm, ''); // Similarly for Auk
+// Download a file
+function downloadItem(path) {
+    const item = getItemByPath(fileSystem, path);
+    if (item.type !== 'file') {
+        alert('Only files can be downloaded.');
+        return;
     }
-    editorInstance.setValue(formatted);
-    outputElement.innerText = "Code formatted successfully.";
+
+    const blob = new Blob([item.content], {type: "text/plain"});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = path.split('/').pop();
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
-function toggleCommentOnCurrentLine() {
-    let position = editorInstance.getPosition();
-    let lineContent = editorInstance.getModel().getLineContent(position.lineNumber);
-    let trimmed = lineContent.trim();
-
-    const lang = getLanguage(currentFile);
-
-    if (lang === 'bog') {
-        if (trimmed.startsWith('~~')) {
-            // Uncomment
-            let uncommented = lineContent.replace(/^~~\s?/, '');
-            editorInstance.executeEdits(null, [{
-                range: new monaco.Range(position.lineNumber, 1, position.lineNumber, lineContent.length + 1),
-                text: uncommented
-            }]);
+// Get item by path
+function getItemByPath(fs, path) {
+    if (!path) return fs;
+    const parts = path.split('/');
+    let current = fs;
+    for (let part of parts) {
+        if (current[part]) {
+            current = current[part];
         } else {
-            // Comment
-            let commented = '~~ ' + lineContent;
-            editorInstance.executeEdits(null, [{
-                range: new monaco.Range(position.lineNumber, 1, position.lineNumber, lineContent.length + 1),
-                text: commented
-            }]);
-        }
-    } else if (lang === 'auk') {
-        if (trimmed.startsWith('//')) {
-            // Uncomment
-            let uncommented = lineContent.replace(/^\/\/\s?/, '');
-            editorInstance.executeEdits(null, [{
-                range: new monaco.Range(position.lineNumber, 1, position.lineNumber, lineContent.length + 1),
-                text: uncommented
-            }]);
-        } else {
-            // Comment
-            let commented = '// ' + lineContent;
-            editorInstance.executeEdits(null, [{
-                range: new monaco.Range(position.lineNumber, 1, position.lineNumber, lineContent.length + 1),
-                text: commented
-            }]);
+            return null;
         }
     }
+    return current;
 }
 
-function lintCode() {
-    // Mock linting based on language
-    const lang = getLanguage(currentFile);
-    if (lang === 'bog') {
-        outputElement.innerText = "No lint issues found in Bog code (mock).";
-    } else if (lang === 'auk') {
-        outputElement.innerText = "No lint issues found in Auk code (mock).";
-    } else {
-        outputElement.innerText = "No linting available for this language.";
+// Save current file to virtual file system and localStorage
+function saveFile() {
+    if (currentFile) {
+        fileSystem[currentFile].content = editorInstance.getValue();
+        saveFileSystem();
     }
 }
 
-function runTests() {
-    // Mock test execution
-    const lang = getLanguage(currentFile);
-    if (lang === 'bog') {
-        outputElement.innerText = "All Bog tests passed (mock).";
-    } else if (lang === 'auk') {
-        outputElement.innerText = "All Auk tests passed (mock).";
-    } else {
-        outputElement.innerText = "No tests available for this language.";
+// Toggle Info Panel
+function toggleInfoPanel() {
+    const infoPanel = document.getElementById('infoPanel');
+    infoPanel.classList.toggle('hidden');
+
+    // Update ARIA attributes
+    const infoBtn = document.getElementById('infoBtn');
+    const isHidden = infoPanel.classList.contains('hidden');
+    infoBtn.setAttribute('aria-expanded', !isHidden);
+    infoPanel.setAttribute('aria-hidden', isHidden);
+}
+
+// Open Settings Modal
+function openSettingsModal() {
+    const modal = document.getElementById('settingsModal');
+    modal.classList.remove('hidden');
+    populateSettings();
+    // Update ARIA attributes
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeSettingsModal() {
+    const modal = document.getElementById('settingsModal');
+    modal.classList.add('hidden');
+    // Update ARIA attributes
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+// Populate settings modal with current settings
+function populateSettings() {
+    const settings = loadSettings();
+    document.getElementById('toggleMinimap').checked = settings.showMinimap !== undefined ? settings.showMinimap : true;
+    document.getElementById('toggleWordWrap').checked = settings.enableWordWrap !== undefined ? settings.enableWordWrap : false;
+    document.getElementById('fontSize').value = settings.fontSize || 14;
+}
+
+// Save settings from modal
+function saveSettingsFromModal() {
+    const showMinimap = document.getElementById('toggleMinimap').checked;
+    const enableWordWrap = document.getElementById('toggleWordWrap').checked;
+    const fontSize = parseInt(document.getElementById('fontSize').value, 10) || 14;
+
+    // Validate font size
+    if (fontSize < 12 || fontSize > 24) {
+        alert('Font size must be between 12 and 24.');
+        return;
+    }
+
+    const settings = { showMinimap, enableWordWrap, fontSize };
+    saveSettings(settings);
+
+    // Apply settings to editor
+    editorInstance.updateOptions({
+        minimap: { enabled: showMinimap },
+        wordWrap: enableWordWrap ? 'on' : 'off',
+        fontSize: fontSize
+    });
+
+    closeSettingsModal();
+    showNotification("Settings saved!");
+}
+
+// Draggable Vertical Divider
+let isDraggingVertical = false;
+let startX, startWidth;
+
+function initDragVertical(e) {
+    isDraggingVertical = true;
+    startX = e.clientX;
+    startWidth = parseInt(document.defaultView.getComputedStyle(document.querySelector('.sidebar')).width, 10);
+    document.documentElement.addEventListener('mousemove', doDragVertical, false);
+    document.documentElement.addEventListener('mouseup', stopDragVertical, false);
+}
+
+function doDragVertical(e) {
+    if (!isDraggingVertical) return;
+    const dx = e.clientX - startX;
+    const newWidth = startWidth + dx;
+    if (newWidth > 150 && newWidth < 500) { // Minimum and Maximum width
+        document.querySelector('.sidebar').style.width = `${newWidth}px`;
     }
 }
 
-function toggleLineNumbers() {
-    const currentOptions = editorInstance.getOptions();
-    const currentLineNumbers = currentOptions.getOption('lineNumbers');
-    const newLineNumbers = currentLineNumbers === 'on' ? 'off' : 'on';
-    editorInstance.updateOptions({ lineNumbers: newLineNumbers });
-    saveSettings({ lineNumbers: newLineNumbers });
-    outputElement.innerText = `Line numbers turned ${newLineNumbers}.`;
+function stopDragVertical() {
+    isDraggingVertical = false;
+    document.documentElement.removeEventListener('mousemove', doDragVertical, false);
+    document.documentElement.removeEventListener('mouseup', stopDragVertical, false);
+}
+
+// Draggable Horizontal Divider
+let isDraggingHorizontal = false;
+let startY, startHeight;
+
+function initDragHorizontal(e) {
+    isDraggingHorizontal = true;
+    startY = e.clientY;
+    startHeight = parseInt(document.defaultView.getComputedStyle(document.querySelector('.output-panel')).height, 10);
+    document.documentElement.addEventListener('mousemove', doDragHorizontal, false);
+    document.documentElement.addEventListener('mouseup', stopDragHorizontal, false);
+}
+
+function doDragHorizontal(e) {
+    if (!isDraggingHorizontal) return;
+    const dy = e.clientY - startY;
+    const newHeight = startHeight + dy;
+    if (newHeight > 100 && newHeight < 500) { // Minimum and Maximum height
+        document.querySelector('.output-panel').style.height = `${newHeight}px`;
+    }
+}
+
+function stopDragHorizontal() {
+    isDraggingHorizontal = false;
+    document.documentElement.removeEventListener('mousemove', doDragHorizontal, false);
+    document.documentElement.removeEventListener('mouseup', stopDragHorizontal, false);
+}
+
+// Enable Drag-and-Drop Functionality for Files Only
+function enableDragAndDrop() {
+    let draggedItem = null;
+
+    fileListEl.addEventListener('dragstart', (e) => {
+        const target = e.target.closest('li.file');
+        if (target && target.getAttribute('data-path')) {
+            draggedItem = target.getAttribute('data-path');
+            e.dataTransfer.setData('text/plain', draggedItem);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+    });
+
+    fileListEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        // No drop targets as folders are removed
+    });
+
+    fileListEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        // No drop targets as folders are removed
+    });
+}
+
+// Export Project Functionality
+function exportProject() {
+    // Mock export functionality
+    outputElement.innerText = "Exporting project...";
+    setTimeout(() => {
+        outputElement.innerText += "\nProject exported successfully as project.zip!";
+    }, 2000);
+}
+
+function clearOutput() {
+    outputElement.innerText = "";
+}
+
+function showFileStatistics() {
+    if (!currentFile) {
+        outputElement.innerText = "No file is currently open.";
+        return;
+    }
+    const content = getFileContent(fileSystem, currentFile);
+    const lineCount = content.split('\n').length;
+    const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
+    outputElement.innerText = `File: ${currentFile}\nLines: ${lineCount}\nWords: ${wordCount}`;
+}
+
+function searchInFiles() {
+    const query = prompt("Enter search keyword:");
+    if (query) {
+        // Mock search functionality
+        outputElement.innerText = `Searching for "${query}" in files...\nFound 3 occurrences.`;
+    } else {
+        outputElement.innerText = "Search canceled.";
+    }
+}
+
+function openDocumentation() {
+    window.open('https://official-bog-docs.com', '_blank');
+}
+
+function buildProject() {
+    // Mock build process
+    outputElement.innerText = "Building project...";
+    setTimeout(() => {
+        outputElement.innerText += "\nBuild completed successfully!";
+    }, 2000);
+}
+
+// Copy to Clipboard Function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        console.log('Path copied to clipboard.');
+    }).catch(err => {
+        console.error('Could not copy text: ', err);
+    });
+}
+
+// Show Notification (CSS handles the animation)
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.classList.add('notification');
+    notification.innerText = message;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
 
 // Initiate Inline New File Creation
@@ -487,12 +624,10 @@ function initiateNewItemCreation(type) {
                 selectedType = prompt("Enter file type (.bog or .auk):", ".bog");
                 if (!selectedType) {
                     alert('File type selection canceled.');
-                    li.remove();
                     return;
                 }
                 if (!['.bog', '.auk'].includes(selectedType.toLowerCase())) {
                     alert('Invalid file type. Only .bog and .auk are allowed.');
-                    li.remove();
                     return;
                 }
                 // Append extension if not present
@@ -634,588 +769,28 @@ function handleFileUpload(event) {
     event.target.value = '';
 }
 
-function traverseFileSystem(fs, parentEl, currentPath) {
-    for (let name in fs) {
-        const item = fs[name];
-        if (item.type === 'file') {
-            const li = document.createElement('li');
-            li.classList.add('file-item');
-            li.setAttribute('data-path', currentPath ? `${currentPath}/${name}` : name);
-            li.setAttribute('data-type', 'file');
-
-            // File Name Element
-            const fileNameSpan = document.createElement('span');
-            fileNameSpan.textContent = name;
-            fileNameSpan.classList.add('file-name');
-            li.appendChild(fileNameSpan);
-
-            // Three-Dots Button
-            const dotsButton = document.createElement('button');
-            dotsButton.classList.add('three-dots-button');
-            dotsButton.innerHTML = '&#x22EE;'; // Vertical Ellipsis (⋮)
-            dotsButton.title = 'Options';
-            li.appendChild(dotsButton);
-
-            // Click Event for Opening File
-            fileNameSpan.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openFile(li.getAttribute('data-path'));
-            });
-
-            // Click Event for Three-Dots Button
-            dotsButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const rect = dotsButton.getBoundingClientRect();
-                showContextMenu(rect.right, rect.bottom, li.getAttribute('data-path'), li.getAttribute('data-type'));
-            });
-
-            // Keyboard Accessibility for Three-Dots Button
-            dotsButton.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    const rect = dotsButton.getBoundingClientRect();
-                    showContextMenu(rect.right, rect.bottom, li.getAttribute('data-path'), li.getAttribute('data-type'));
-                }
-            });
-
-            parentEl.appendChild(li);
-        }
-    }
-}
-
-// app.js
-
-// Rename a file
-function renameItemPrompt(path, type) {
-    let newName = prompt("Enter new name:", path.split('/').pop());
-    if (newName === null) return; // User cancelled
-
-    newName = newName.trim();
-    if (newName === '') {
-        alert('Name cannot be empty.');
-        return;
-    }
-
-    if (type === 'file') {
-        // Validate extension
-        const ext = newName.split('.').pop().toLowerCase();
-        if (!['bog', 'auk'].includes(ext)) {
-            alert('Invalid file type. Only .bog and .auk are allowed.');
-            return;
-        }
-
-        const fileName = newName.endsWith(`.${ext}`) ? newName : `${newName}.${ext}`;
-
-        // Validate: No additional dots before extension
-        const nameWithoutExtension = fileName.slice(0, -(ext.length + 1));
-        if (nameWithoutExtension.includes('.')) {
-            alert('File name cannot contain dots before the extension.');
-            return;
-        }
-
-        // Check for invalid characters
-        const invalidChars = /[\/\\?%*:|"<>]/;
-        if (invalidChars.test(nameWithoutExtension)) {
-            alert('File name contains invalid characters.');
-            return;
-        }
-
-        // Determine parent path (root directory)
-        const fullPath = fileName;
-
-        // Check if new name already exists
-        if (getItemByPath(fileSystem, fullPath)) {
-            alert('A file with this name already exists.');
-            return;
-        }
-
-        // Perform rename
-        fileSystem[fileName] = fileSystem[path];
-        delete fileSystem[path];
-
-        // Update language if extension changed
-        fileSystem[fileName].language = ext === 'bog' ? 'bog' : 'auk';
-
-        // If renaming the current open file
-        if (currentFile === path) {
-            currentFile = fileName;
-            editorInstance.updateOptions({ language: getLanguage(currentFile) });
-        }
-
-        saveFileSystem();
-        renderFileList();
-    } else {
-        alert('Rename operation is only available for files.');
-    }
-}
-
-// Delete a file
-function deleteItemPrompt(path, type) {
-    if (!confirm(`Are you sure you want to delete "${path}"?`)) return;
-
-    if (type === 'file') {
-        // Determine parent path (root directory)
-        delete fileSystem[path];
-    }
-
-    // If deleting the current open file
-    if (currentFile === path) {
-        currentFile = null;
-        editorInstance.setValue('');
-    }
-
-    saveFileSystem();
-    renderFileList();
-    updatePreview(); // Update preview if the current file is deleted
-}
-
-// Download a file
-function downloadItem(path) {
-    const item = getItemByPath(fileSystem, path);
-    if (item.type !== 'file') {
-        alert('Only files can be downloaded.');
-        return;
-    }
-
-    const blob = new Blob([item.content], {type: "text/plain"});
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = path.split('/').pop();
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-// app.js
-
-// ... Existing Code ...
-
-// Show custom context menu
-function showContextMenu(x, y, path, type) {
-    const menu = document.getElementById('fileContextMenu');
-    menu.style.top = `${y}px`;
-    menu.style.left = `${x}px`;
-    menu.classList.remove('hidden');
-    menu.setAttribute('data-path', path);
-    menu.setAttribute('data-type', type);
-
-    // Adjust position if the menu goes beyond the viewport
-    const rect = menu.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    if (rect.right > viewportWidth) {
-        menu.style.left = `${viewportWidth - rect.width - 10}px`; // 10px padding
-    }
-
-    if (rect.bottom > viewportHeight) {
-        menu.style.top = `${viewportHeight - rect.height - 10}px`; // 10px padding
-    }
-}
-
-// Hide context menu
-function hideContextMenu() {
-    const menu = document.getElementById('fileContextMenu');
-    menu.classList.add('hidden');
-    menu.removeAttribute('data-path');
-    menu.removeAttribute('data-type');
-}
-
-// Handle context menu actions
-function handleContextMenuAction(action, path, type) {
-    switch(action) {
-        case 'rename':
-            renameItemPrompt(path, type);
-            break;
-        case 'delete':
-            deleteItemPrompt(path, type);
-            break;
-        case 'download':
-            if (type === 'file') downloadItem(path);
-            else alert('Only files can be downloaded.');
-            break;
-    }
-}
-
-// Event Listener for Context Menu Actions
-document.getElementById('fileContextMenu').addEventListener('click', (e) => {
-    const action = e.target.getAttribute('data-action');
-    const menu = document.getElementById('fileContextMenu');
-    const path = menu.getAttribute('data-path');
-    const type = menu.getAttribute('data-type');
-
-    if (action && path) {
-        handleContextMenuAction(action, path, type);
-        hideContextMenu();
-    }
-});
-
-// Close context menu when clicking outside
-document.addEventListener('click', (e) => {
-    const menu = document.getElementById('fileContextMenu');
-    if (!menu.contains(e.target)) {
-        hideContextMenu();
-    }
-});
-
-// Prevent default context menu from appearing elsewhere (optional)
-document.addEventListener('contextmenu', (e) => {
-    // Allow default context menu unless it's on a file-item
-    const target = e.target.closest('.file-item');
-    if (target) {
-        e.preventDefault(); // Prevent default if right-clicking on a file
-        const dotsButton = target.querySelector('.three-dots-button');
-        if (dotsButton) {
-            const rect = dotsButton.getBoundingClientRect();
-            showContextMenu(rect.right, rect.bottom, target.getAttribute('data-path'), target.getAttribute('data-type'));
-        }
-    }
-});
-
-// app.js
-
-// Modify showContextMenu to hide any existing open context menu
-function showContextMenu(x, y, path, type) {
-    // Hide any existing context menu
-    hideContextMenu();
-
-    const menu = document.getElementById('fileContextMenu');
-    menu.style.top = `${y}px`;
-    menu.style.left = `${x}px`;
-    menu.classList.remove('hidden');
-    menu.setAttribute('data-path', path);
-    menu.setAttribute('data-type', type);
-
-    // Adjust position if the menu goes beyond the viewport
-    const rect = menu.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    if (rect.right > viewportWidth) {
-        menu.style.left = `${viewportWidth - rect.width - 10}px`; // 10px padding
-    }
-
-    if (rect.bottom > viewportHeight) {
-        menu.style.top = `${viewportHeight - rect.height - 10}px`; // 10px padding
-    }
-}
-
-
-// Handle context menu actions
-function handleContextMenuAction(action, path, type) {
-    switch(action) {
-        case 'rename':
-            renameItemPrompt(path, type);
-            break;
-        case 'delete':
-            deleteItemPrompt(path, type);
-            break;
-        case 'download':
-            if (type === 'file') downloadItem(path);
-            else alert('Only files can be downloaded.');
-            break;
-    }
-}
-
-// Rename a file or folder
-function renameItemPrompt(path, type) {
-    let newName = prompt("Enter new name:", path.split('/').pop());
-    if (newName === null) return; // User cancelled
-
-    newName = newName.trim();
-    if (newName === '') {
-        alert('Name cannot be empty.');
-        return;
-    }
-
-    if (type === 'file') {
-        // Validate extension
-        const ext = newName.split('.').pop().toLowerCase();
-        if (!['bog', 'auk'].includes(ext)) {
-            alert('Invalid file type. Only .bog and .auk are allowed.');
-            return;
-        }
-
-        const fileName = newName.endsWith(`.${ext}`) ? newName : `${newName}.${ext}`;
-
-        // Validate: No additional dots before extension
-        const nameWithoutExtension = fileName.slice(0, -(ext.length + 1));
-        if (nameWithoutExtension.includes('.')) {
-            alert('File name cannot contain dots before the extension.');
-            return;
-        }
-
-        // Check for invalid characters
-        const invalidChars = /[\/\\?%*:|"<>]/;
-        if (invalidChars.test(nameWithoutExtension)) {
-            alert('File name contains invalid characters.');
-            return;
-        }
-
-        // Determine parent path (root directory)
-        const parentPath = ''; // All files are in root
-        const fullPath = fileName;
-
-        // Check if new name already exists
-        if (getItemByPath(fileSystem, fullPath)) {
-            alert('A file with this name already exists.');
-            return;
-        }
-
-        // Perform rename
-        fileSystem[fileName] = fileSystem[path];
-        delete fileSystem[path];
-
-        // Update language if extension changed
-        fileSystem[fileName].language = ext === 'bog' ? 'bog' : 'auk';
-
-        // If renaming the current open file
-        if (currentFile === path) {
-            currentFile = fileName;
-            editorInstance.updateOptions({ language: getLanguage(currentFile) });
-        }
-
-        saveFileSystem();
-        renderFileList();
-    } else {
-        alert('Rename operation is only available for files.');
-    }
-}
-
-// Delete a file or folder
-function deleteItemPrompt(path, type) {
-    if (!confirm(`Are you sure you want to delete "${path}"?`)) return;
-
-    if (type === 'file') {
-        // Determine parent path (root directory)
-        const parentPath = ''; // All files are in root
-        delete fileSystem[path];
-    }
-
-    // If deleting the current open file
-    if (currentFile === path) {
-        currentFile = null;
-        editorInstance.setValue('');
-    }
-
-    saveFileSystem();
-    renderFileList();
-}
-
-// Download a file
-function downloadItem(path) {
-    const item = getItemByPath(fileSystem, path);
-    if (item.type !== 'file') {
-        alert('Only files can be downloaded.');
-        return;
-    }
-
-    const blob = new Blob([item.content], {type: "text/plain"});
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = path.split('/').pop();
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-// Get item by path
-function getItemByPath(fs, path) {
-    if (!path) return fs;
-    const parts = path.split('/');
-    let current = fs;
-    for (let part of parts) {
-        if (current[part]) {
-            current = current[part];
-        } else {
-            return null;
-        }
-    }
-    return current;
-}
-
-// Save current file to virtual file system and localStorage
-function saveFile() {
-    if (currentFile) {
-        fileSystem[currentFile].content = editorInstance.getValue();
-        saveFileSystem();
-    }
-}
-
-// Toggle Info Panel
-function toggleInfoPanel() {
-    const infoPanel = document.getElementById('infoPanel');
-    infoPanel.classList.toggle('hidden');
-}
-
-// Open Settings Modal
-function openSettingsModal() {
-    const modal = document.getElementById('settingsModal');
-    modal.classList.remove('hidden');
-    populateSettings();
-}
-
-// Close Settings Modal
-function closeSettingsModal() {
-    const modal = document.getElementById('settingsModal');
-    modal.classList.add('hidden');
-}
-
-// Populate settings modal with current settings
-function populateSettings() {
-    const settings = loadSettings();
-    document.getElementById('toggleMinimap').checked = settings.showMinimap !== undefined ? settings.showMinimap : true;
-    document.getElementById('toggleWordWrap').checked = settings.enableWordWrap !== undefined ? settings.enableWordWrap : false;
-    document.getElementById('fontSize').value = settings.fontSize || 14;
-}
-
-// Save settings from modal
-function saveSettingsFromModal() {
-    const showMinimap = document.getElementById('toggleMinimap').checked;
-    const enableWordWrap = document.getElementById('toggleWordWrap').checked;
-    const fontSize = parseInt(document.getElementById('fontSize').value, 10) || 14;
-
-    // Validate font size
-    if (fontSize < 12 || fontSize > 24) {
-        alert('Font size must be between 12 and 24.');
-        return;
-    }
-
-    const settings = { showMinimap, enableWordWrap, fontSize };
-    saveSettings(settings);
-
-    // Apply settings to editor
-    editorInstance.updateOptions({
-        minimap: { enabled: showMinimap },
-        wordWrap: enableWordWrap ? 'on' : 'off',
-        fontSize: fontSize
-    });
-
-    closeSettingsModal();
-    alert("Settings saved!");
-}
-
-// Draggable Vertical Divider
-let isDraggingVertical = false;
-let startX, startWidth;
-
-function initDragVertical(e) {
-    isDraggingVertical = true;
-    startX = e.clientX;
-    startWidth = parseInt(document.defaultView.getComputedStyle(document.querySelector('.sidebar')).width, 10);
-    document.documentElement.addEventListener('mousemove', doDragVertical, false);
-    document.documentElement.addEventListener('mouseup', stopDragVertical, false);
-}
-
-function doDragVertical(e) {
-    if (!isDraggingVertical) return;
-    const dx = e.clientX - startX;
-    const newWidth = startWidth + dx;
-    if (newWidth > 150 && newWidth < 500) { // Minimum and Maximum width
-        document.querySelector('.sidebar').style.width = `${newWidth}px`;
-    }
-}
-
-function stopDragVertical() {
-    isDraggingVertical = false;
-    document.documentElement.removeEventListener('mousemove', doDragVertical, false);
-    document.documentElement.removeEventListener('mouseup', stopDragVertical, false);
-}
-
-// Draggable Horizontal Divider
-let isDraggingHorizontal = false;
-let startY, startHeight;
-
-function initDragHorizontal(e) {
-    isDraggingHorizontal = true;
-    startY = e.clientY;
-    startHeight = parseInt(document.defaultView.getComputedStyle(document.querySelector('.output-panel')).height, 10);
-    document.documentElement.addEventListener('mousemove', doDragHorizontal, false);
-    document.documentElement.addEventListener('mouseup', stopDragHorizontal, false);
-}
-
-function doDragHorizontal(e) {
-    if (!isDraggingHorizontal) return;
-    const dy = e.clientY - startY;
-    const newHeight = startHeight + dy;
-    if (newHeight > 100 && newHeight < 500) { // Minimum and Maximum height
-        document.querySelector('.output-panel').style.height = `${newHeight}px`;
-    }
-}
-
-function stopDragHorizontal() {
-    isDraggingHorizontal = false;
-    document.documentElement.removeEventListener('mousemove', doDragHorizontal, false);
-    document.documentElement.removeEventListener('mouseup', stopDragHorizontal, false);
-}
-
-// Enable Drag-and-Drop Functionality for Files Only
-function enableDragAndDrop() {
-    let draggedItem = null;
-
-    fileListEl.addEventListener('dragstart', (e) => {
-        const target = e.target.closest('li.file');
-        if (target && target.getAttribute('data-path')) {
-            draggedItem = target.getAttribute('data-path');
-            e.dataTransfer.setData('text/plain', draggedItem);
-            e.dataTransfer.effectAllowed = 'move';
-        }
-    });
-
-    fileListEl.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        // No drop targets as folders are removed
-    });
-
-    fileListEl.addEventListener('drop', (e) => {
-        e.preventDefault();
-        // No drop targets as folders are removed
+// Copy to Clipboard Function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        console.log('Path copied to clipboard.');
+    }).catch(err => {
+        console.error('Could not copy text: ', err);
     });
 }
 
-function exportProject() {
-    // Mock export functionality
-    outputElement.innerText = "Exporting project...";
+// Show Notification (CSS handles the animation)
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.classList.add('notification');
+    notification.innerText = message;
+    document.body.appendChild(notification);
     setTimeout(() => {
-        outputElement.innerText += "\nProject exported successfully as project.zip!";
-    }, 2000);
+        notification.remove();
+    }, 3000);
 }
 
-function clearOutput() {
-    outputElement.innerText = "";
-}
+// Remove unused Command Palette functionality
 
-function showFileStatistics() {
-    if (!currentFile) {
-        outputElement.innerText = "No file is currently open.";
-        return;
-    }
-    const content = getFileContent(fileSystem, currentFile);
-    const lineCount = content.split('\n').length;
-    const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
-    outputElement.innerText = `File: ${currentFile}\nLines: ${lineCount}\nWords: ${wordCount}`;
-}
+// Initiate Inline New File Creation
+// (Same as previously provided)
 
-function searchInFiles() {
-    const query = prompt("Enter search keyword:");
-    if (query) {
-        // Mock search functionality
-        outputElement.innerText = `Searching for "${query}" in files...\nFound 3 occurrences.`;
-    } else {
-        outputElement.innerText = "Search canceled.";
-    }
-}
-
-function openDocumentation() {
-    window.open('https://official-bog-docs.com', '_blank');
-}
-
-function buildProject() {
-    // Mock build process
-    outputElement.innerText = "Building project...";
-    setTimeout(() => {
-        outputElement.innerText += "\nBuild completed successfully!";
-    }, 2000);
-}

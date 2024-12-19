@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/bog (2).png"/>
     <title>Bog IDE</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Meta Tags for Social Media -->
+    <meta property="og:title" content="Bog IDE - Develop with Bog and Auk Languages">
+    <meta property="og:description" content="Bog IDE is a web-based integrated development environment tailored for the Bog and Auk programming languages. Experience real-time previews, interactive features, and seamless coding.">
+    <meta property="og:image" content="https://bogide.pages.dev/bog (2).png">
+    <meta property="og:url" content="https://bogide.pages.dev">
+    <meta property="og:type" content="website">
     <!-- Monaco Editor Loader -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.33.0/min/vs/loader.js"></script>
     <!-- Language Configurations -->
@@ -13,12 +20,13 @@
 </head>
 <body class="bog-dark">
     <div class="main-container">
-        <div class="sidebar">
-            <div class="sidebar-header">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <header class="sidebar-header">
                 <h2>
                     BOG
-                    <!-- Circular info button with letter 'i' -->
-                    <button id="infoBtn" title="Show Info Panel" class="info-circle-button">i</button>
+                    <!-- Info Button -->
+                    <button id="infoBtn" class="info-circle-button" title="Info Panel" aria-controls="infoPanel" aria-expanded="false">i</button>
                 </h2>
                 <div class="sidebar-actions">
                     <button id="newFileBtn" title="New File">New File</button>
@@ -26,12 +34,17 @@
                     <button id="uploadBtn" title="Upload File">Upload</button>
                     <input type="file" id="fileInput" accept=".bog,.auk" style="display:none;">
                 </div>
-            </div>
-            <ul class="file-list" id="fileList"></ul>
+            </header>
+            <ul class="file-list" id="fileList">
+                <!-- File items will be dynamically populated here -->
+            </ul>
             <!-- Draggable Divider -->
-            <div class="divider-vertical" id="dividerVertical"></div>
-        </div>
-        <div class="editor-container">
+            <div class="divider-vertical" id="dividerVertical" role="separator" aria-orientation="vertical"></div>
+        </nav>
+
+        <!-- Editor Container -->
+        <main class="editor-container">
+            <!-- Editor Toolbar -->
             <div class="editor-toolbar">
                 <button id="runButton" title="Run Code">Run</button>
                 <select id="themeSelect" title="Theme">
@@ -43,22 +56,35 @@
                     <option value="bog-highContrast">Bog High Contrast</option>
                     <option value="auk-dark">Auk Dark</option>
                     <option value="auk-light">Auk Light</option>
+                    <option value="bog-sunset">Bog Sunset</option>
+                    <option value="bog-twilight">Bog Twilight</option>
+                    <option value="auk-autumn">Auk Autumn</option>
+                    <option value="bog-forest">Bog Forest</option>
+                    <option value="auk-winter">Auk Winter</option>
+                    <option value="bog-lava">Bog Lava</option>
+                    <option value="auk-neon">Auk Neon</option>
+                    <option value="bog-solarized">Bog Solarized</option>
+                    <option value="auk-retro">Auk Retro</option>
+                    <option value="bog-galaxy">Bog Galaxy</option>
+                    <option value="auk-vintage">Auk Vintage</option>
                 </select>
-                <button id="commandPaletteButton" title="Show Command Palette">Commands</button>
+                <!-- Removed Command Palette Button -->
                 <button id="settingsBtn" title="Settings">Settings</button>
             </div>
-            <div id="editor" class="editor"></div>
-            <div class="output-panel">
-                <div class="output-header">Output</div>
-                <div id="output" class="output-content"></div>
+            <!-- Editor -->
+            <div id="editor" class="editor" role="region" aria-label="Code Editor"></div>
+            <!-- Output Panel -->
+            <section class="output-panel" aria-labelledby="outputHeader">
+                <div class="output-header" id="outputHeader">Output</div>
+                <div id="output" class="output-content" role="log" aria-live="polite"></div>
                 <!-- Draggable Horizontal Divider -->
-                <div class="divider-horizontal" id="dividerHorizontal"></div>
-            </div>
-        </div>
+                <div class="divider-horizontal" id="dividerHorizontal" role="separator" aria-orientation="horizontal"></div>
+            </section>
+        </main>
     </div>
 
     <!-- Info Panel -->
-    <div id="infoPanel" class="info-panel hidden" tabindex="-1">
+    <aside id="infoPanel" class="info-panel hidden" tabindex="-1" aria-hidden="true">
         <h3>About Bog and Auk Languages</h3>
         
         <!-- Bog Language Information -->
@@ -70,15 +96,15 @@
             <p><strong>Example:</strong></p>
             <pre><code>suckin "std.bog"
 
-                bogfn main(): num {
-                    fen count = 10
-                    mire(count > 5) {
-                        gurgle("Count is greater than 5")
-                    } sludge {
-                        gurgle("Count is 5 or less")
-                    }
-                    drain 0
-                }
+bogfn main(): num {
+    fen count = 10
+    mire(count > 5) {
+        gurgle("Count is greater than 5")
+    } sludge {
+        gurgle("Count is 5 or less")
+    }
+    drain 0
+}
             </code></pre>
             <p><strong>Comments:</strong> Single-line comments use <code>~~</code>, multi-line comments use <code>~~~ ... ~~~</code></p>
         </section>
@@ -99,8 +125,8 @@
             <p><strong>Properties:</strong> Auk introduces custom properties prefixed with <code>fen-</code> to define styles.</p>
             <p><strong>Example:</strong></p>
             <pre><code>selector fen-color: #ff0000
-    selector mire-background: #00ff00
-    ~~ This is a comment ~~
+selector mire-background: #00ff00
+~~ This is a comment ~~
             </code></pre>
             <p><strong>Additional Features:</strong></p>
             <ul>
@@ -114,49 +140,49 @@
         
         <!-- General Information -->
         <section>
-            <p>🌱 **Simple Syntax**<br>💧 **Inspired by Nature**<br>🛠 **Great for Styling and Logic**</p>
+            <p>🌱 <strong>Simple Syntax</strong><br>💧 <strong>Inspired by Nature</strong><br>🛠 <strong>Great for Styling and Logic</strong></p>
         </section>
-    </div>
-    </div>
+    </aside>
 
-    <!-- Command Palette -->
-    <div id="commandPalette" class="command-palette hidden">
-        <input type="text" id="commandInput" placeholder="Type a command... (e.g. 'compile', 'format', 'lint', 'runTests', 'showDocs', 'toggleLineNumbers', 'build', 'deploy', 'search', 'toggleDarkMode', 'fileStats', 'clearOutput', 'export')" />
-        <ul id="commandList">
-            <li data-command="compile">Compile Code</li>
-            <li data-command="format">Format Document</li>
-            <li data-command="togglecomment">Toggle Comment</li>
-            <li data-command="lint">Lint Code</li>
-            <li data-command="runTests">Run Tests</li>
-            <li data-command="showdocs">Show/Hide Docs</li>
-            <li data-command="togglelinenumbers">Toggle Line Numbers</li>
-        </ul>
-    </div>
-
-
-<div id="fileContextMenu" class="context-menu hidden">
+    <!-- Context Menu -->
+<!-- Context Menu -->
+<div id="fileContextMenu" class="context-menu hidden" role="menu" aria-hidden="true">
     <ul>
-        <li data-action="rename">Rename</li>
-        <li data-action="delete">Delete</li>
-        <li data-action="download">Download</li>
+        <li data-action="open" role="menuitem" tabindex="0">Open</li>
+        <li data-action="download" role="menuitem" tabindex="0">Download</li>
+        <li data-action="copyPath" role="menuitem" tabindex="0">Copy Path</li>
+        <li data-action="revealInExplorer" role="menuitem" tabindex="0">Reveal in Explorer</li>
     </ul>
 </div>
 
-<!-- Existing Scripts -->
-<script src="app.js" defer></script>
 
-
-    <!-- Game Elements -->
-    <div id="gameContainer" class="gameContainer">
-        <div id="scoreDisplay" class="scoreDisplay">Score: 0</div>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden" role="dialog" aria-hidden="true">
+        <div class="modal-content">
+            <span class="close" id="closeSettings">&times;</span>
+            <h3>Settings</h3>
+            <div class="settings-group">
+                <label>
+                    <input type="checkbox" id="toggleMinimap">
+                    Show Minimap
+                </label>
+            </div>
+            <div class="settings-group">
+                <label>
+                    <input type="checkbox" id="toggleWordWrap">
+                    Enable Word Wrap
+                </label>
+            </div>
+            <div class="settings-group">
+                <label for="fontSize">Font Size:</label>
+                <input type="number" id="fontSize" min="12" max="24" value="14">
+            </div>
+            <button id="saveSettings">Save</button>
+        </div>
     </div>
 
+
+    <!-- Main JavaScript -->
     <script src="app.js" defer></script>
 </body>
 </html>
-
-<meta property="og:title" content="Bog IDE - Develop with Bog and Auk Languages">
-    <meta property="og:description" content="Bog IDE is a web-based integrated development environment tailored for the Bog and Auk programming languages. Experience real-time previews, interactive features, and seamless coding.">
-    <meta property="og:image" content="https://bogide.pages.dev/bog (2).png">
-    <meta property="og:url" content="https://bogide.pages.dev">
-    <meta property="og:type" content="website">
